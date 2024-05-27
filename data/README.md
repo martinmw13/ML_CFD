@@ -1,6 +1,6 @@
-### In this directory should be the CFD data. In this case, these are pre-processed into csv files. 
+### In this directory should be the CFD data. These are pre-processed into csv files. 
 
-### The CSV file stores data where each column represents a snapshot of dimensions nx by ny, collapsed into a column vector. It contains 1000 columns, which correspond to 1000 snapshots (1000 time-steps).
+### The CSV file stores data where each column represents a snapshot of dimensions nx x ny, collapsed into a column vector. It contains 2000 columns, which correspond to 2000 snapshots (2000 time-steps).
 
 
 ## Original CFD Simulation Parameters
