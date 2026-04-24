@@ -1,6 +1,18 @@
-### In this directory should be the CFD data. These are pre-processed into csv files. 
+### In this directory should be the CFD data. These are pre-processed into CSV files.
 
-### The CSV file stores data where each column represents a snapshot of dimensions nx x ny, collapsed into a column vector. It contains 2000 columns, which correspond to 2000 snapshots (2000 time-steps).
+The snapshot CSV used by the `mlcfd` package follows the same convention as the thesis notebooks. By default, files are expected at:
+
+- `{input_dir}/modVcropRe{re}.csv`
+
+where `re` is the **Reynolds number** (see `DataConfig` in the code). The filename template is configurable via `snapshot_filename_template` in YAML (default `modVcropRe{re}.csv`).
+
+### The CSV file layout
+
+- Each **column** is a **time snapshot** (one column = one time step’s field).
+- Each **row** is a **spatial degree of freedom** on the **cropped** grid (velocity samples indexed over the mesh after cropping).
+- The workshop notebooks often used on the order of **2000** columns (2000 snapshots) for a given case; your file may differ.
+
+**Data structure (summary):**
 
 
 ## Original CFD Simulation Parameters
@@ -50,4 +62,9 @@ u_{2,1} & u_{2,2} & \dots & u_{2,n} \\
 \vdots & \vdots & \ddots & \vdots \\
 \vdots & \vdots &  &  u_{n,m} \\
 \end{bmatrix}$$
+
+## Notes for the `mlcfd` pipeline
+
+- Place CSVs under the directory you pass as `data.input_dir` in the run YAML (commonly this `data/` folder).
+- Do not commit large CSVs to git: they are listed in the repository [`.gitignore`](../.gitignore).
 
