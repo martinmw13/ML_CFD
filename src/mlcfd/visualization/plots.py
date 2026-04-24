@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import logging
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -13,9 +12,10 @@ from numpy.typing import NDArray
 
 from mlcfd.io.storage import ensure_directory, write_matrix_csv
 from mlcfd.mesh.mesh import Mesh
+from mlcfd.logging_config import get_logger
 from mlcfd.preprocessing.pipeline import reconstruct_field
 
-LOGGER = logging.getLogger("mlcfd.visualization")
+LOGGER = get_logger("visualization")
 
 PLOT_DPI: int = 200
 

@@ -1,24 +1,26 @@
+"""Centralized logging configuration for the mlcfd package."""
+
+from __future__ import annotations
+
 import logging
 import logging.config
 from enum import Enum
 from typing import Final
 
-APP_LOGGER_NAMESPACE: Final[str] = "app"
+MLCFD_LOGGER_NAMESPACE: Final[str] = "mlcfd"
 
-LOGGER_NAME_DATA_PREP: Final[str] = "data_prep"
-LOGGER_NAME_MMM_PIPELINE: Final[str] = "mmm_pipeline"
+LOGGER_NAME_CLI: Final[str] = "cli"
+LOGGER_NAME_IO: Final[str] = "io"
+LOGGER_NAME_MODELS: Final[str] = "models"
+LOGGER_NAME_PIPELINE: Final[str] = "pipeline"
+LOGGER_NAME_PREPROCESSING: Final[str] = "preprocessing"
+LOGGER_NAME_VISUALIZATION: Final[str] = "visualization"
 
 _configured = False
 
 
 class LoggingLevel(str, Enum):
-    """
-    Canonical logging levels used across the application configuration.
-
-    Provides a string-based Enum aligned with Python's `logging` levels, allowing
-    configuration files and environment variables to specify log verbosity using
-    readable strings (e.g., "INFO", "DEBUG").
-    """
+    """String levels aligned with the standard logging module."""
 
     DEBUG = "DEBUG"
     INFO = "INFO"
@@ -29,7 +31,7 @@ class LoggingLevel(str, Enum):
     CRITICAL = "CRITICAL"
 
 
-LOGGING_CONFIG = {
+LOGGING_CONFIG: dict[str, object] = {
     "version": 1,
     "disable_existing_loggers": False,
     "formatters": {
@@ -59,19 +61,20 @@ LOGGING_CONFIG = {
             "filters": [],
         },
     },
-    # Root receives all library loggers (e.g. mmm.*); ``app.*`` propagates here too.
-    # A handler only on ``app`` would miss ``logging.getLogger("mmm.training.pipeline")``.
     "root": {
         "handlers": ["console_handler"],
         "level": "INFO",
     },
     "loggers": {
-        APP_LOGGER_NAMESPACE: {
+        MLCFD_LOGGER_NAMESPACE: {
             "level": "INFO",
             "propagate": True,
         },
-        # Python-side TensorFlow chatter; C++ INFO lines still use TF_CPP_MIN_LOG_LEVEL.
-        "tensorflow": {
+        "matplotlib": {
+            "level": "WARNING",
+            "propagate": True,
+        },
+        "sklearn": {
             "level": "WARNING",
             "propagate": True,
         },
@@ -79,27 +82,39 @@ LOGGING_CONFIG = {
 }
 
 
-def configure_logging() -> None:
-    """
-    Apply shared logging configuration (console handler on root, formatters).
+def configure_logging(level: LoggingLevel | str | None = None) -> None:
+    """Apply shared logging configuration (console handler on root, formatters).
 
     Safe to call from multiple entry points: only the first call takes effect.
+    Subsequent calls are ignored unless logging is reconfigured externally.
+
+    Args:
+        level: Optional override for root and ``mlcfd`` logger levels.
     """
     global _configured
     if _configured:
         return
+    if level is not None:
+        level_name = level.value if isinstance(level, LoggingLevel) else str(level)
+        root = LOGGING_CONFIG["root"]
+        if isinstance(root, dict):
+            root["level"] = level_name
+        mlcfd_logger = LOGGING_CONFIG["loggers"]
+        if isinstance(mlcfd_logger, dict):
+            entry = mlcfd_logger.get(MLCFD_LOGGER_NAMESPACE)
+            if isinstance(entry, dict):
+                entry["level"] = level_name
     logging.config.dictConfig(LOGGING_CONFIG)
     _configured = True
 
 
 def get_logger(component: str) -> logging.Logger:
-    """
-    Return a logger under the application namespace.
+    """Return a logger under the ``mlcfd`` namespace.
 
     Args:
-        component: Short name for this module or script (e.g. ``data_prep``).
+        component: Short name for the subsystem (for example, ``"pipeline"``).
 
     Returns:
-        A ``logging.Logger`` instance whose name is ``app.<component>``.
+        Logger named ``mlcfd.<component>``.
     """
-    return logging.getLogger(f"{APP_LOGGER_NAMESPACE}.{component}")
+    return logging.getLogger(f"{MLCFD_LOGGER_NAMESPACE}.{component}")

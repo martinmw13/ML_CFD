@@ -2,14 +2,15 @@
 
 from __future__ import annotations
 
-import logging
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
 from numpy.typing import NDArray
 
-LOGGER = logging.getLogger("mlcfd.io")
+from mlcfd.logging_config import get_logger
+
+LOGGER = get_logger("io")
 
 
 def ensure_directory(path: Path) -> None:

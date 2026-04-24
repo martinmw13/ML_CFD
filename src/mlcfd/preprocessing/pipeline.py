@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import logging
-
 import numpy as np
 from numpy.typing import NDArray
 from sklearn.model_selection import train_test_split
@@ -11,9 +9,10 @@ from sklearn.preprocessing import StandardScaler
 
 from mlcfd.config.schemas import DataConfig
 from mlcfd.io.storage import read_matrix_csv
+from mlcfd.logging_config import get_logger
 from mlcfd.mesh.mesh import Mesh
 
-LOGGER = logging.getLogger("mlcfd.preprocessing")
+LOGGER = get_logger("preprocessing")
 
 
 def reconstruct_field(
