@@ -1,0 +1,39 @@
+# Bytecode and caches
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Distribution / build
+build/
+dist/
+*.egg-info/
+*.egg
+
+# Jupyter
+.ipynb_checkpoints/
+
+# IDE / OS
+.idea/
+.vscode/
+*.swp
+.DS_Store
+
+# Local data and model artifacts (not tracked)
+data/*.csv
+data/*.bin
+*.pt
+*.pth
+*.ckpt
+
+# Logs and run outputs
+*.log
+runs/
+.cursor/

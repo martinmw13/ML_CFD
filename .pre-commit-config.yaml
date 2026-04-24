@@ -1,0 +1,24 @@
+# Ruff pre-commit hooks: https://github.com/astral-sh/ruff-pre-commit
+# - id "ruff" runs `ruff check` (lint). Args [--fix] apply safe fixes on commit.
+# - id "ruff-format" runs `ruff format` (formatter). Both run on staged files.
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.11.13
+    hooks:
+      - id: ruff
+        name: ruff check (lint)
+        args: [--fix]
+      - id: ruff-format
+        name: ruff format
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-added-large-files
+        args: ["--maxkb=500"]
+  - repo: https://github.com/kynan/nbstripout
+    rev: 0.8.1
+    hooks:
+      - id: nbstripout
