@@ -58,7 +58,3 @@ Hooks run **Ruff** (`ruff` = lint/check with `--fix`, `ruff-format` = format), `
 Exploratory work lives under [`notebooks/`](notebooks/); the CLI is the reproducible path. Use **nbstripout** so large outputs are not committed.
 
 The thesis notebooks (PCA, manifold methods, autoencoders) are under [`notebooks/legacy/`](notebooks/legacy/); they import `mlcfd` instead of the old `dataprocess` package. See [`notebooks/legacy/README.md`](notebooks/legacy/README.md).
-
-## Legacy `dataprocess/`
-
-The original thesis helpers remain under `dataprocess/` for reference. New work should use the `mlcfd` package (see `dataprocess/LEGACY.md`).
