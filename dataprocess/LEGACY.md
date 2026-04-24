@@ -9,4 +9,6 @@ For new work:
 - Prefer `from mlcfd...` imports and a YAML / CLI run.
 - Keep using this folder only if you are reproducing a historical notebook one-to-one or until notebooks are updated.
 
-When notebooks are fully migrated, this directory may be removed in favor of `mlcfd` only.
+The thesis Jupyter notebooks now live under [`notebooks/legacy/`](../notebooks/legacy/) and import `mlcfd` instead of this package.
+
+When nothing else references this folder, it may be removed in favor of `mlcfd` only.

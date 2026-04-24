@@ -1,5 +1,7 @@
 # Exploratory notebooks
 
+**Legacy thesis method notebooks** (PCA, LLE, autoencoders, …) live in [`legacy/`](legacy/) with `mlcfd` imports.
+
 These notebooks are for **interactive experimentation** (parameter tweaks, plots, debugging). Reproducible, scriptable runs should use the CLI:
 
 ```bash

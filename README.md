@@ -49,12 +49,15 @@ Hooks run **Ruff** (`ruff` = lint/check with `--fix`, `ruff-format` = format), `
 | `mlcfd.pipeline` | YAML-driven orchestration |
 | `mlcfd.cli` | `mlcfd run` and future commands |
 | `mlcfd.logging_config` | `configure_logging`, `get_logger("…")` |
+| `mlcfd.thesis` | Drop-in helpers for migrated thesis notebooks (`thesis_mesh`, `read_X_csv`, etc.) |
 
 **Logger names** (under the `mlcfd` namespace) include: `io`, `preprocessing`, `models`, `pipeline`, `visualization`, and `cli`.
 
 ## Notebooks
 
 Exploratory work lives under [`notebooks/`](notebooks/); the CLI is the reproducible path. Use **nbstripout** so large outputs are not committed.
+
+The thesis notebooks (PCA, manifold methods, autoencoders) are under [`notebooks/legacy/`](notebooks/legacy/); they import `mlcfd` instead of the old `dataprocess` package. See [`notebooks/legacy/README.md`](notebooks/legacy/README.md).
 
 ## Legacy `dataprocess/`
 
