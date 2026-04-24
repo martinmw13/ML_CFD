@@ -43,6 +43,14 @@ def reconstruct_field(
     return full
 
 
+def erase_cylinder_rows(
+    matrix: NDArray[np.floating],
+    mesh: Mesh,
+) -> NDArray[np.floating]:
+    """Remove matrix rows that lie inside the cylinder mask (thesis `erase_cyl`)."""
+    return matrix[~mesh.mask, :]
+
+
 def subtract_mean(
     X: NDArray[np.floating],
     axis: int = 1,
@@ -95,7 +103,7 @@ class DataPipeline:
 
     def erase_cylinder(self, matrix: NDArray[np.floating]) -> NDArray[np.floating]:
         """Remove rows lying inside the cylinder mask."""
-        return matrix[~self._mesh.mask, :]
+        return erase_cylinder_rows(matrix, self._mesh)
 
     def fit_scaler(self, x_train: NDArray[np.floating]) -> NDArray[np.floating]:
         """Fit ``StandardScaler`` on the training matrix and return transformed data."""
