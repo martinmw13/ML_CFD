@@ -10,7 +10,7 @@ where `re` is the **Reynolds number** (see `DataConfig` in the code). The filena
 
 - Each **column** is a **time snapshot** (one column = one time step’s field).
 - Each **row** is a **spatial degree of freedom** on the **cropped** grid (velocity samples indexed over the mesh after cropping).
-- The workshop notebooks often used on the order of **2000** columns (2000 snapshots) for a given case; your file may differ.
+- The thesis notebooks often used on the order of **2000** columns (2000 snapshots) for a given case; your file may differ.
 
 **Data structure (summary):**
 
