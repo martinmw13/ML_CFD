@@ -8,8 +8,10 @@ repos:
       - id: ruff
         name: ruff check (lint)
         args: [--fix]
+        files: ^src/
       - id: ruff-format
         name: ruff format
+        files: ^src/
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0
     hooks:
