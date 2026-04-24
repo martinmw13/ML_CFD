@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Union
 
 import numpy as np
 from numpy.typing import NDArray
@@ -13,7 +12,7 @@ from mlcfd.io.storage import read_matrix_csv
 from mlcfd.mesh.mesh import Mesh
 from mlcfd.visualization.plots import plot_reconstruction_error, save_modes
 
-PathLike = Union[str, Path]
+PathLike = str | Path
 
 
 def thesis_mesh(
@@ -44,7 +43,7 @@ def read_snapshot_matrix(data_path: PathLike) -> NDArray[np.float64]:
     return read_matrix_csv(Path(data_path))
 
 
-read_X_csv = read_snapshot_matrix
+read_X_csv = read_snapshot_matrix  # noqa: N816
 
 
 def save_thesis_modes(
@@ -76,8 +75,5 @@ def plot_save_reconst(
     output_path: PathLike | None = None,
 ) -> None:
     """Wrapper around :func:`mlcfd.visualization.plots.plot_reconstruction_error` for notebooks."""
-    if output_path is None:
-        out = Path(f"{dr_method}_rec_error.png")
-    else:
-        out = Path(output_path)
+    out = Path(f"{dr_method}_rec_error.png") if output_path is None else Path(output_path)
     plot_reconstruction_error(err_rec, r_max, r_step, str(dr_method), out)

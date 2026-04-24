@@ -24,7 +24,7 @@ def _fix_data_path_line(line: str) -> str:
     """From ``notebooks/legacy/`` one more ``..`` is needed to reach project ``data/``."""
     line = line.replace('"../data/', '"../../data/')
     line = line.replace("'../data/", "'../../data/")
-    line = line.replace("(\"../data/", "(\"../../data/")
+    line = line.replace('("../data/', '("../../data/')
     return line
 
 
@@ -49,7 +49,7 @@ def _strip_stale_sys(sources: list[str]) -> list[str]:
     joined = "".join(sources)
     if "sys." in joined:
         return sources
-    return [ln for ln in sources if not (ln.strip() == "import sys")]
+    return [ln for ln in sources if ln.strip() != "import sys"]
 
 
 def patch_notebook(path: Path) -> None:

@@ -52,20 +52,20 @@ def erase_cylinder_rows(
 
 
 def subtract_mean(
-    X: NDArray[np.floating],
+    data: NDArray[np.floating],
     axis: int = 1,
 ) -> tuple[NDArray[np.floating], NDArray[np.floating]]:
     """Subtract the mean along an axis without mutating the input.
 
     Args:
-        X: Input array.
+        data: Input array.
         axis: Axis used by ``numpy.mean``.
 
     Returns:
-        Tuple of ``(X_centered, mean)`` where ``X_centered`` is a new array.
+        Tuple of ``(centered, mean)`` where ``centered`` is a new array.
     """
-    mean = np.mean(X, axis=axis, keepdims=True)
-    return X - mean, mean
+    mean = np.mean(data, axis=axis, keepdims=True)
+    return data - mean, mean
 
 
 class DataPipeline:

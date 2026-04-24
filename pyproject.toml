@@ -39,6 +39,8 @@ packages = ["src/mlcfd"]
 target-version = "py310"
 line-length = 100
 src = ["src"]
+# Frozen thesis notebooks: keep ruff for src/ and tools only.
+extend-exclude = ["notebooks/legacy"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "UP", "N", "B", "SIM", "RUF"]

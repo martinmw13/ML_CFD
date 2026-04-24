@@ -39,12 +39,18 @@ class DataConfig(BaseModel):
         default="modVcropRe{re}.csv",
         description="Filename template for snapshot CSV; must include `{re}` placeholder.",
     )
-    test_size: float = Field(default=0.5, gt=0, lt=1, description="Fraction held out as test split.")
+    test_size: float = Field(
+        default=0.5, gt=0, lt=1, description="Fraction held out as test split."
+    )
     spatial_reduction: bool = Field(
         default=True,
-        description="If True, apply StandardScaler along the spatial snapshot axis used in notebooks.",
+        description=(
+            "If True, apply StandardScaler along the spatial snapshot axis used in notebooks."
+        ),
     )
-    random_seed: int = Field(default=42, description="Seed for any stochastic preprocessing or models.")
+    random_seed: int = Field(
+        default=42, description="Seed for any stochastic preprocessing or models."
+    )
 
     def snapshot_csv_path(self) -> Path:
         """Return the resolved CSV path for the configured Reynolds number."""
@@ -80,16 +86,22 @@ class OutputConfig(BaseModel):
     """Where to write metrics, plots, and optional modal exports."""
 
     output_dir: Path = Field(description="Base directory for run artifacts.")
-    save_modes: bool = Field(default=True, description="Whether to export spatial modes when supported.")
+    save_modes: bool = Field(
+        default=True, description="Whether to export spatial modes when supported."
+    )
     save_plots: bool = Field(default=True, description="Whether to save diagnostic figures.")
 
 
 class SweepModelConfig(BaseModel):
     """Parameters for models that sweep retained dimensions (PCA, etc.)."""
 
-    profile: Literal["sweep"] = Field(default="sweep", description="Discriminator tag for sweep models.")
+    profile: Literal["sweep"] = Field(
+        default="sweep", description="Discriminator tag for sweep models."
+    )
     r_max: int = Field(default=12, gt=0, description="Maximum number of components to evaluate.")
-    r_step: int = Field(default=1, gt=0, description="Step size between component counts in sweeps.")
+    r_step: int = Field(
+        default=1, gt=0, description="Step size between component counts in sweeps."
+    )
 
 
 class ManifoldModelConfig(BaseModel):
@@ -112,7 +124,9 @@ class ManifoldModelConfig(BaseModel):
 class KPCAModelConfig(BaseModel):
     """Kernel PCA parameters including inverse transform settings."""
 
-    profile: Literal["kpca"] = Field(default="kpca", description="Discriminator tag for KPCA models.")
+    profile: Literal["kpca"] = Field(
+        default="kpca", description="Discriminator tag for KPCA models."
+    )
     r_max: int = Field(default=12, gt=0)
     r_step: int = Field(default=1, gt=0)
     k_neighbors: int = Field(default=10, gt=0)
