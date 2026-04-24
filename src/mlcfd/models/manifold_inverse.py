@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import numpy as np
 from numpy.typing import NDArray
-from sklearn.manifold._locally_linear import barycenter_kneighbors_graph  # noqa: PLC2701
+from sklearn.manifold._locally_linear import barycenter_kneighbors_graph
 
 from mlcfd.models.base import sklearn_layout
 

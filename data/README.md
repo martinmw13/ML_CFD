@@ -67,4 +67,3 @@ u_{2,1} & u_{2,2} & \dots & u_{2,n} \\
 
 - Place CSVs under the directory you pass as `data.input_dir` in the run YAML (commonly this `data/` folder).
 - Do not commit large CSVs to git: they are listed in the repository [`.gitignore`](../.gitignore).
-

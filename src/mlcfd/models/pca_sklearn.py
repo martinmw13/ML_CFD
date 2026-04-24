@@ -24,7 +24,9 @@ class PCASklearnModel(SweepableModel):
     def fit(self, x_train: NDArray[np.floating]) -> None:
         """Store the training matrix; PCA objects are refit inside the sweep."""
         self._x_train = np.asarray(x_train, dtype=np.float64)
-        LOGGER.info("Stored training matrix for PCA-sklearn sweeps with shape %s", self._x_train.shape)
+        LOGGER.info(
+            "Stored training matrix for PCA-sklearn sweeps with shape %s", self._x_train.shape
+        )
 
     def reconstruction_error(
         self,

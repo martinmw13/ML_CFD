@@ -11,8 +11,8 @@ from matplotlib.colors import LinearSegmentedColormap
 from numpy.typing import NDArray
 
 from mlcfd.io.storage import ensure_directory, write_matrix_csv
-from mlcfd.mesh.mesh import Mesh
 from mlcfd.logging_config import get_logger
+from mlcfd.mesh.mesh import Mesh
 from mlcfd.preprocessing.pipeline import reconstruct_field
 
 LOGGER = get_logger("visualization")
