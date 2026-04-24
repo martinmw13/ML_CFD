@@ -1,0 +1,37 @@
+# Minimal autoencoder run for smoke-testing (very small default architecture).
+# Increase hidden_layers/num_epochs for production use.
+
+mesh:
+  nx: 227
+  ny: 120
+  lx: 17.665369
+  ly: 9.0
+  x0: 2.66537
+  y0: 4.5
+  r: 0.5
+
+data:
+  input_dir: data
+  reynolds_number: 50
+  snapshot_filename_template: "modVcropRe{re}.csv"
+  test_size: 0.5
+  spatial_reduction: true
+  random_seed: 42
+
+output:
+  output_dir: runs/ae_spatial_re50_minimal
+  save_modes: false
+  save_plots: false
+
+model_name: ae_spatial
+
+model_params:
+  profile: autoencoder
+  batch_size: 128
+  num_epochs: 5
+  learning_rate: 0.001
+  scheduler_step: 3000
+  scheduler_gamma: 0.1
+  random_seed: 42
+  hidden_layers: [256, 64, 16]
+  log_every_n_epochs: 1

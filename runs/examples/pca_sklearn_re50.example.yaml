@@ -1,0 +1,31 @@
+# Example sweep run (PCA, sklearn) — copy and edit paths for your environment.
+# Expects: data/modVcropRe<reynolds_number>.csv (see data/README.md).
+
+mesh:
+  nx: 227
+  ny: 120
+  lx: 17.665369
+  ly: 9.0
+  x0: 2.66537
+  y0: 4.5
+  r: 0.5
+
+data:
+  input_dir: data
+  reynolds_number: 50
+  snapshot_filename_template: "modVcropRe{re}.csv"
+  test_size: 0.5
+  spatial_reduction: true
+  random_seed: 42
+
+output:
+  output_dir: runs/pca_sklearn_re50
+  save_modes: true
+  save_plots: true
+
+model_name: pca_sklearn
+
+model_params:
+  profile: sweep
+  r_max: 12
+  r_step: 1

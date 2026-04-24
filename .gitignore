@@ -35,5 +35,9 @@ data/*.bin
 
 # Logs and run outputs
 *.log
-runs/
+# Ignore ad-hoc run output under `runs/`, but keep examples tracked
+runs/*
+!runs/README.md
+!runs/examples/
+!runs/examples/**
 .cursor/

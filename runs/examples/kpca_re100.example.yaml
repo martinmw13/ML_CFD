@@ -1,0 +1,37 @@
+# Example Kernel PCA sweep (matches thesis-style defaults where applicable).
+
+mesh:
+  nx: 227
+  ny: 120
+  lx: 17.665369
+  ly: 9.0
+  x0: 2.66537
+  y0: 4.5
+  r: 0.5
+
+data:
+  input_dir: data
+  reynolds_number: 100
+  snapshot_filename_template: "modVcropRe{re}.csv"
+  test_size: 0.5
+  spatial_reduction: true
+  random_seed: 42
+
+output:
+  output_dir: runs/kpca_re100
+  save_modes: false
+  save_plots: true
+
+model_name: kpca
+
+model_params:
+  profile: kpca
+  r_max: 12
+  r_step: 1
+  k_neighbors: 10
+  reg: 1.0e-9
+  transpose_flag: false
+  kernel: rbf
+  gamma: 0.01
+  degree: 1
+  alpha: 0.001
