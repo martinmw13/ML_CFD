@@ -35,12 +35,24 @@ class DataConfig(BaseModel):
 
     input_dir: Path = Field(description="Directory containing CSV snapshots.")
     reynolds_number: int = Field(gt=0, description="Reynolds number label used in filenames.")
+    snapshot_filename_template: str = Field(
+        default="modVcropRe{re}.csv",
+        description="Filename template for snapshot CSV; must include `{re}` placeholder.",
+    )
     test_size: float = Field(default=0.5, gt=0, lt=1, description="Fraction held out as test split.")
     spatial_reduction: bool = Field(
         default=True,
         description="If True, apply StandardScaler along the spatial snapshot axis used in notebooks.",
     )
     random_seed: int = Field(default=42, description="Seed for any stochastic preprocessing or models.")
+
+    def snapshot_csv_path(self) -> Path:
+        """Return the resolved CSV path for the configured Reynolds number."""
+        if "{re}" not in self.snapshot_filename_template:
+            msg = "snapshot_filename_template must contain '{re}' placeholder"
+            raise ValueError(msg)
+        filename = self.snapshot_filename_template.format(re=self.reynolds_number)
+        return self.input_dir / filename
 
 
 class CropConfig(BaseModel):
