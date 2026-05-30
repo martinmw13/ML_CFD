@@ -48,6 +48,20 @@ class SweepableModel(ABC):
     ) -> tuple[NDArray[np.floating], NDArray[np.floating]]:
         """Return the last reconstruction and relative errors for each ``r`` sweep."""
 
+    def spatial_modes(self) -> NDArray[np.floating] | None:
+        """Return the spatial mode basis for a fitted model, or ``None`` if unavailable.
+
+        When present, the basis has shape ``(n_free, n_modes)`` — one column per spatial
+        mode living in the cylinder-masked row space, ready to hand to
+        :func:`mlcfd.visualization.plots.save_modes`. Callers typically export only the
+        leading modes (``min(params.r_max, n_modes)`` columns).
+
+        The default returns ``None`` so that models without a meaningful modal basis
+        (manifold embeddings, per-rank refit PCA, kernel PCA) signal "no modes" and let
+        callers skip mode export predictably. Subclasses that hold a basis override this.
+        """
+        return None
+
 
 class TrainableModel(ABC):
     """Models that require iterative optimization (for example, autoencoders)."""

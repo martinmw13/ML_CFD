@@ -26,6 +26,13 @@ class PCASVDModel(SweepableModel):
         self._u = u
         LOGGER.info("Fitted PCA-SVD on training matrix with shape %s", x_train.shape)
 
+    def spatial_modes(self) -> NDArray[np.floating]:
+        """Return the left singular vectors as the spatial mode basis ``(n_free, n_modes)``."""
+        if self._u is None:
+            msg = "Call fit() before spatial_modes()"
+            raise RuntimeError(msg)
+        return self._u
+
     def reconstruction_error(
         self,
         x_test: NDArray[np.floating],
