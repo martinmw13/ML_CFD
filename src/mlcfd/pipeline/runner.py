@@ -9,7 +9,7 @@ import numpy as np
 import yaml
 
 from mlcfd.config.schemas import RunConfig
-from mlcfd.io.storage import ensure_directory
+from mlcfd.io.storage import ensure_directory, read_matrix_csv
 from mlcfd.logging_config import get_logger
 from mlcfd.mesh.mesh import Mesh
 from mlcfd.models.factory import (
@@ -36,7 +36,8 @@ def run_from_config(run: RunConfig) -> None:
     LOGGER.info("Starting pipeline for model %s", run.model_name)
     mesh = Mesh(run.mesh)
     pipeline = DataPipeline(mesh, run.data)
-    x_train, x_test = pipeline.run()
+    matrix = read_matrix_csv(run.data.snapshot_csv_path())
+    x_train, x_test = pipeline.run(matrix)
     out_dir = run.output.output_dir
     ensure_directory(out_dir)
 

@@ -8,7 +8,6 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
 from mlcfd.config.schemas import DataConfig
-from mlcfd.io.storage import read_matrix_csv
 from mlcfd.logging_config import get_logger
 from mlcfd.mesh.mesh import Mesh
 
@@ -82,12 +81,6 @@ class DataPipeline:
         self._config = data_config
         self._scaler: StandardScaler | None = None
 
-    def load_matrix(self) -> NDArray[np.float64]:
-        """Read the snapshot matrix from disk."""
-        path = self._config.snapshot_csv_path()
-        LOGGER.info("Loading snapshot matrix from %s", path)
-        return read_matrix_csv(path)
-
     def train_test_split_no_shuffle(
         self,
         matrix: NDArray[np.floating],
@@ -124,9 +117,33 @@ class DataPipeline:
             return self._scaler.transform(matrix.T).T
         return self._scaler.transform(matrix)
 
-    def run(self) -> tuple[NDArray[np.floating], NDArray[np.floating]]:
-        """Execute load → split → cylinder mask → scaling on train and test."""
-        matrix = self.load_matrix()
+    def inverse_transform(self, matrix: NDArray[np.floating]) -> NDArray[np.floating]:
+        """Undo a previous ``fit_scaler``/``transform`` to recover unscaled values.
+
+        Mirrors :meth:`transform`, including the ``spatial_reduction`` transpose, so a
+        scaled matrix round-trips back to the inputs the scaler was fitted against.
+        """
+        if self._scaler is None:
+            msg = "Scaler must be fitted before inverse_transform()"
+            raise RuntimeError(msg)
+        if self._config.spatial_reduction:
+            return self._scaler.inverse_transform(matrix.T).T
+        return self._scaler.inverse_transform(matrix)
+
+    def run(
+        self,
+        matrix: NDArray[np.floating],
+    ) -> tuple[NDArray[np.floating], NDArray[np.floating]]:
+        """Execute split → cylinder mask → scaling on a caller-supplied matrix.
+
+        Args:
+            matrix: Snapshot matrix of shape ``(n_points, n_snapshots)``. The caller
+                (orchestration in production, a test in memory) is responsible for
+                obtaining it, e.g. by reading the snapshot CSV.
+
+        Returns:
+            Tuple of scaled ``(x_train, x_test)`` with cylinder rows removed.
+        """
         x_train, x_test = self.train_test_split_no_shuffle(matrix)
         x_train_f = self.erase_cylinder(x_train)
         x_test_f = self.erase_cylinder(x_test)
