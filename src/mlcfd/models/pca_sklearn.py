@@ -28,25 +28,15 @@ class PCASklearnModel(SweepableModel):
             "Stored training matrix for PCA-sklearn sweeps with shape %s", self._x_train.shape
         )
 
-    def reconstruction_error(
-        self,
-        x_test: NDArray[np.floating],
-    ) -> tuple[NDArray[np.floating], NDArray[np.floating]]:
-        """Refit PCA for each ``r`` and measure relative Frobenius reconstruction error."""
+    def _prepare_test(self, x_test: NDArray[np.floating]) -> NDArray[np.floating]:
+        """Cast the test matrix to float64 for sklearn estimators."""
+        return np.asarray(x_test, dtype=np.float64)
+
+    def reconstruct(self, x_test: NDArray[np.floating], r: int) -> NDArray[np.floating]:
+        """Refit PCA at rank ``r`` and round-trip ``x_test`` through it."""
         if self._x_train is None:
             msg = "Call fit() before reconstruction_error()"
             raise RuntimeError(msg)
-        x_test_arr = np.asarray(x_test, dtype=np.float64)
-        errors: list[float] = []
-        last_recon = x_test_arr
-        for rank in range(1, self._params.r_max + 1, self._params.r_step):
-            model = PCA(n_components=rank)
-            model.fit(self._x_train)
-            latent = model.transform(x_test_arr)
-            recon = model.inverse_transform(latent)
-            last_recon = recon
-            num = float(np.linalg.norm(x_test_arr - recon, ord="fro"))
-            den = float(np.linalg.norm(x_test_arr, ord="fro"))
-            errors.append(num / den if den > 0.0 else float("inf"))
-        LOGGER.debug("PCA-sklearn sweep produced %s error samples", len(errors))
-        return last_recon, np.asarray(errors, dtype=np.float64)
+        model = PCA(n_components=r)
+        model.fit(self._x_train)
+        return model.inverse_transform(model.transform(x_test))

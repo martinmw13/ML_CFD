@@ -33,23 +33,10 @@ class PCASVDModel(SweepableModel):
             raise RuntimeError(msg)
         return self._u
 
-    def reconstruction_error(
-        self,
-        x_test: NDArray[np.floating],
-    ) -> tuple[NDArray[np.floating], NDArray[np.floating]]:
-        """Project ``x_test`` onto the first ``r`` left singular vectors for each sweep."""
+    def reconstruct(self, x_test: NDArray[np.floating], r: int) -> NDArray[np.floating]:
+        """Project ``x_test`` onto the first ``r`` left singular vectors."""
         if self._u is None:
             msg = "Call fit() before reconstruction_error()"
             raise RuntimeError(msg)
-        errors: list[float] = []
-        last_recon = x_test
-        for rank in range(1, self._params.r_max + 1, self._params.r_step):
-            r = min(rank, self._u.shape[1])
-            basis = self._u[:, :r]
-            recon = basis @ (basis.T @ x_test)
-            last_recon = recon
-            num = float(np.linalg.norm(x_test - recon, ord="fro"))
-            den = float(np.linalg.norm(x_test, ord="fro"))
-            errors.append(num / den if den > 0.0 else float("inf"))
-        LOGGER.debug("PCA-SVD sweep produced %s error samples", len(errors))
-        return last_recon, np.asarray(errors, dtype=np.float64)
+        basis = self._u[:, : min(r, self._u.shape[1])]
+        return basis @ (basis.T @ x_test)
