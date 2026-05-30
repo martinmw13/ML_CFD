@@ -21,13 +21,6 @@ LOGGER = get_logger("models")
 SweepParams: TypeAlias = SweepModelConfig | ManifoldModelConfig | KPCAModelConfig
 
 
-def sklearn_layout(matrix: NDArray[np.floating], transpose_flag: bool) -> NDArray[np.floating]:
-    """Match notebook convention: transpose when ``transpose_flag`` is False."""
-    if not transpose_flag:
-        return matrix.T
-    return matrix
-
-
 class SweepableModel(ABC):
     """Models that evaluate reconstruction error while sweeping retained dimensions."""
 
@@ -74,8 +67,9 @@ class SweepableModel(ABC):
 
         The returned matrix is both the input handed to :meth:`reconstruct` and the
         reference the relative-Frobenius metric is measured against, so per-model layout
-        differences (raw matrix vs :func:`sklearn_layout`, float64 views) live here. The
-        default is the identity; models operating in sklearn layout override it.
+        differences (raw matrix vs :func:`mlcfd.orientation.orient`, float64 views) live
+        here. The default is the identity; models operating in a different snapshot
+        orientation override it.
         """
         return x_test
 

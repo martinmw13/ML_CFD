@@ -3,8 +3,8 @@
 The rank iteration, the relative-Frobenius metric, and the ``den > 0`` guard live in
 the base; subclasses supply only a per-rank ``reconstruct``. These tests pin the driver
 in isolation against a closed-form synthetic model, anchor PCA-SVD numerically, and smoke
-the three sklearn-backed models (KPCA, Isomap, LLE) whose layout path the refactor rewrote
--- a misplaced ``sklearn_layout`` there fails silently otherwise.
+the three sklearn-backed models (KPCA, Isomap, LLE) whose orientation path applies
+:func:`mlcfd.orientation.orient` -- a misplaced transpose there fails silently otherwise.
 """
 
 from __future__ import annotations
@@ -101,9 +101,10 @@ _R_MAX, _R_STEP, _K = 3, 1, 5
 def _manifold_matrices() -> tuple[NDArray[np.floating], NDArray[np.floating]]:
     """Train/test matrices shaped ``(n_features, n_samples)``.
 
-    With the default ``transpose_flag=False`` the models apply ``sklearn_layout`` (a
-    transpose), so the *sample* axis becomes 15 (train) / 8 (test) -- both above
-    ``k_neighbors`` and the barycenter graph's ``k + 1`` requirement.
+    With the default ``SNAPSHOTS_AS_ROWS`` orientation the models apply
+    :func:`mlcfd.orientation.orient` (a transpose), so the *sample* axis becomes 15
+    (train) / 8 (test) -- both above ``k_neighbors`` and the barycenter graph's
+    ``k + 1`` requirement.
     """
     rng = np.random.default_rng(0)
     x_train = rng.standard_normal((6, 15))
@@ -115,8 +116,8 @@ def _assert_sweep_curve(last_recon: NDArray[np.floating], errors: NDArray[np.flo
     """Every sklearn-backed sweep returns a finite curve and a recon in sklearn layout."""
     assert errors.shape == (len(range(1, _R_MAX + 1, _R_STEP)),)
     assert np.isfinite(errors).all()
-    # Error is measured in sklearn layout, so the recon carries the transposed test shape;
-    # this catches a double-applied or dropped sklearn_layout.
+    # Error is measured in the SNAPSHOTS_AS_ROWS orientation, so the recon carries the
+    # transposed test shape; this catches a double-applied or dropped orient().
     assert last_recon.shape == (8, 6)
 
 

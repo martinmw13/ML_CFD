@@ -2,7 +2,7 @@
 
 These exercise real package code without touching the filesystem or any CFD
 CSVs. The ``DataPipeline.run`` cases drive the full split -> cylinder mask ->
-scale flow on an in-memory matrix, the seam where the spatial-reduction
+scale flow on an in-memory matrix, the seam where the snapshot-orientation
 transpose wiring is most likely to break.
 """
 
@@ -15,6 +15,7 @@ import pytest
 
 from mlcfd.config.schemas import DataConfig, MeshConfig
 from mlcfd.mesh.mesh import Mesh
+from mlcfd.orientation import SnapshotOrientation
 from mlcfd.preprocessing.pipeline import DataPipeline, subtract_mean
 
 
@@ -23,13 +24,13 @@ def _build_mesh() -> Mesh:
     return Mesh(MeshConfig(nx=5, ny=4, lx=4.0, ly=3.0, x0=2.0, y0=1.5, r=0.6))
 
 
-def _build_data_config(*, spatial_reduction: bool) -> DataConfig:
+def _build_data_config(*, orientation: SnapshotOrientation) -> DataConfig:
     """Data config with placeholder IO fields; the matrix is supplied in memory."""
     return DataConfig(
         input_dir=Path("unused"),
         reynolds_number=50,
         test_size=0.5,
-        spatial_reduction=spatial_reduction,
+        orientation=orientation,
         random_seed=0,
     )
 
@@ -58,11 +59,16 @@ def test_subtract_mean_does_not_mutate_input() -> None:
     assert centered is not data
 
 
-@pytest.mark.parametrize("spatial_reduction", [True, False])
-def test_run_prepares_split_mask_and_scaling_in_memory(spatial_reduction: bool) -> None:
+@pytest.mark.parametrize(
+    "orientation",
+    [SnapshotOrientation.SNAPSHOTS_AS_ROWS, SnapshotOrientation.SNAPSHOTS_AS_COLUMNS],
+)
+def test_run_prepares_split_mask_and_scaling_in_memory(
+    orientation: SnapshotOrientation,
+) -> None:
     """run() splits, masks, and scales a caller-supplied matrix with no file on disk."""
     mesh = _build_mesh()
-    pipeline = DataPipeline(mesh, _build_data_config(spatial_reduction=spatial_reduction))
+    pipeline = DataPipeline(mesh, _build_data_config(orientation=orientation))
 
     n_points = mesh.n_points
     n_snapshots = 6
@@ -84,8 +90,9 @@ def test_run_prepares_split_mask_and_scaling_in_memory(spatial_reduction: bool) 
 
     # Standardization pins the config -> orientation wiring: a self-consistent
     # transpose bug would round-trip fine, so assert the scaled train stats
-    # along the axis the spatial_reduction flag selects (ddof=0, as sklearn).
-    scaled_axis = 1 if spatial_reduction else 0
+    # along the axis the orientation selects (ddof=0, as sklearn). SNAPSHOTS_AS_ROWS
+    # standardizes each spatial point across snapshots (axis 1).
+    scaled_axis = 1 if orientation is SnapshotOrientation.SNAPSHOTS_AS_ROWS else 0
     np.testing.assert_allclose(x_train_s.mean(axis=scaled_axis), 0.0, atol=1e-9)
     np.testing.assert_allclose(x_train_s.std(axis=scaled_axis), 1.0, atol=1e-9)
 

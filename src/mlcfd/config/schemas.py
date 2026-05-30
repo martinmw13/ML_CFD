@@ -7,6 +7,8 @@ from typing import Annotated, Literal, TypeAlias, get_args
 
 from pydantic import BaseModel, Field, ValidationInfo, field_validator, model_validator
 
+from mlcfd.orientation import SnapshotOrientation
+
 ModelName: TypeAlias = Literal[
     "pca_svd",
     "pca_sklearn",
@@ -42,10 +44,12 @@ class DataConfig(BaseModel):
     test_size: float = Field(
         default=0.5, gt=0, lt=1, description="Fraction held out as test split."
     )
-    spatial_reduction: bool = Field(
-        default=True,
+    orientation: SnapshotOrientation = Field(
+        default=SnapshotOrientation.SNAPSHOTS_AS_ROWS,
         description=(
-            "If True, apply StandardScaler along the spatial snapshot axis used in notebooks."
+            "Snapshot layout the StandardScaler standardizes in. SNAPSHOTS_AS_ROWS "
+            "standardizes each spatial point across snapshots (the notebook default); "
+            "SNAPSHOTS_AS_COLUMNS standardizes each snapshot across space."
         ),
     )
     random_seed: int = Field(
@@ -115,9 +119,9 @@ class ManifoldModelConfig(BaseModel):
     r_step: int = Field(default=1, gt=0)
     k_neighbors: int = Field(default=10, gt=0)
     reg: float = Field(default=1e-9, gt=0)
-    transpose_flag: bool = Field(
-        default=False,
-        description="If True, skip the notebook-style transpose before fitting.",
+    orientation: SnapshotOrientation = Field(
+        default=SnapshotOrientation.SNAPSHOTS_AS_ROWS,
+        description="Snapshot layout the embedding is fitted in (sklearn wants snapshots as rows).",
     )
 
 
@@ -131,7 +135,10 @@ class KPCAModelConfig(BaseModel):
     r_step: int = Field(default=1, gt=0)
     k_neighbors: int = Field(default=10, gt=0)
     reg: float = Field(default=1e-9, gt=0)
-    transpose_flag: bool = Field(default=False)
+    orientation: SnapshotOrientation = Field(
+        default=SnapshotOrientation.SNAPSHOTS_AS_ROWS,
+        description="Snapshot layout the kernel is fitted in (sklearn wants snapshots as rows).",
+    )
     kernel: str = Field(default="rbf", description="Kernel name passed to KernelPCA.")
     gamma: float = Field(default=0.01)
     degree: int = Field(default=1, ge=0)
