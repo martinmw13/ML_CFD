@@ -44,7 +44,7 @@ Hooks run **Ruff** (`ruff` = lint/check with `--fix`, `ruff-format` = format), `
 | `mlcfd.mesh` | Cylinder mask and grid metadata |
 | `mlcfd.io` | CSV I/O for snapshot matrices |
 | `mlcfd.preprocessing` | Load / split / mask / standardize |
-| `mlcfd.models` | PCA, manifolds, KPCA, autoencoders, factory |
+| `mlcfd.models` | PCA, manifolds, KPCA, autoencoders, model registry |
 | `mlcfd.visualization` | Modes and reconstruction error plots |
 | `mlcfd.pipeline` | YAML-driven orchestration |
 | `mlcfd.cli` | `mlcfd run` and future commands |

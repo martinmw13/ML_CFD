@@ -180,28 +180,15 @@ class RunConfig(BaseModel):
 
     @model_validator(mode="after")
     def model_name_matches_params(self) -> RunConfig:
-        """Ensure sweep vs manifold vs KPCA vs AE params align with the declared model id."""
-        name = self.model_name
-        params = self.model_params
+        """Ensure ``model_params`` is the schema the registry declares for ``model_name``."""
+        # Imported lazily: the registry imports the concrete model classes, which import
+        # this module for their parameter schemas, so a top-level import would cycle.
+        from mlcfd.models.registry import MODEL_REGISTRY
 
-        sweep_models = {"pca_svd", "pca_sklearn"}
-        manifold_models = {"lle", "isomap"}
-        kpca_models = {"kpca"}
-        ae_models = {"ae_spatial", "ae_temporal"}
-
-        if name in sweep_models and not isinstance(params, SweepModelConfig):
-            msg = f"Model {name!r} requires SweepModelConfig parameters."
+        expected = MODEL_REGISTRY[self.model_name].param_type
+        if not isinstance(self.model_params, expected):
+            msg = f"Model {self.model_name!r} requires {expected.__name__} parameters."
             raise ValueError(msg)
-        if name in manifold_models and not isinstance(params, ManifoldModelConfig):
-            msg = f"Model {name!r} requires ManifoldModelConfig parameters."
-            raise ValueError(msg)
-        if name in kpca_models and not isinstance(params, KPCAModelConfig):
-            msg = f"Model {name!r} requires KPCAModelConfig parameters."
-            raise ValueError(msg)
-        if name in ae_models and not isinstance(params, AutoencoderModelConfig):
-            msg = f"Model {name!r} requires AutoencoderModelConfig parameters."
-            raise ValueError(msg)
-
         return self
 
 
