@@ -10,12 +10,7 @@ from mlcfd.config.schemas import RunConfig
 from mlcfd.io.storage import read_matrix_csv
 from mlcfd.logging_config import get_logger
 from mlcfd.mesh.mesh import Mesh
-from mlcfd.models.factory import (
-    build_sweep_model,
-    build_trainable_model,
-    is_sweep_model,
-    is_trainable_model,
-)
+from mlcfd.models.registry import MODEL_REGISTRY
 from mlcfd.pipeline.results import SweepOutcome, TrainableOutcome, write_run_results
 from mlcfd.preprocessing.pipeline import DataPipeline
 
@@ -43,9 +38,11 @@ def run_from_config(run: RunConfig) -> None:
     matrix = read_matrix_csv(run.data.snapshot_csv_path())
     x_train, x_test = pipeline.run(matrix)
 
-    if is_sweep_model(run.model_name):
-        model = build_sweep_model(run)
-        model.fit(x_train)
+    spec = MODEL_REGISTRY[run.model_name]
+    model = spec.builder(run.model_params)
+    model.fit(x_train)
+
+    if spec.run_kind == "sweep":
         _, errors = model.reconstruction_error(x_test)
         outcome: SweepOutcome | TrainableOutcome = SweepOutcome(
             model_name=run.model_name,
@@ -54,15 +51,10 @@ def run_from_config(run: RunConfig) -> None:
             r_step=model.params.r_step,
             modes=model.spatial_modes(),
         )
-    elif is_trainable_model(run.model_name):
-        trainable = build_trainable_model(run)
-        trainable.fit(x_train)
+    else:
         outcome = TrainableOutcome(
             model_name=run.model_name,
-            metrics=trainable.evaluate(x_test),
+            metrics=model.evaluate(x_test),
         )
-    else:
-        msg = f"Unsupported model_name: {run.model_name}"
-        raise ValueError(msg)
 
     write_run_results(outcome, run.output, mesh)
