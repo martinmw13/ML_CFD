@@ -32,11 +32,16 @@ class KPCAModel(SweepableModel):
         )
         LOGGER.info("Stored KPCA training matrix with shape %s", self._x_train.shape)
 
-    def reconstruction_error(
-        self,
-        x_test: NDArray[np.floating],
-    ) -> tuple[NDArray[np.floating], NDArray[np.floating]]:
-        """Refit KernelPCA for each ``r`` and compute inverse-transform reconstructions."""
+    def _prepare_test(self, x_test: NDArray[np.floating]) -> NDArray[np.floating]:
+        """Cast the test matrix to a float64 view in sklearn layout."""
+        params = self._params
+        if not isinstance(params, KPCAModelConfig):
+            msg = "Internal configuration must remain KPCAModelConfig"
+            raise TypeError(msg)
+        return np.asarray(sklearn_layout(x_test, params.transpose_flag), dtype=np.float64)
+
+    def reconstruct(self, x_test: NDArray[np.floating], r: int) -> NDArray[np.floating]:
+        """Refit KernelPCA at rank ``r`` and inverse-transform ``x_test``."""
         if self._x_train is None:
             msg = "Call fit() before reconstruction_error()"
             raise RuntimeError(msg)
@@ -44,27 +49,13 @@ class KPCAModel(SweepableModel):
         if not isinstance(params, KPCAModelConfig):
             msg = "Internal configuration must remain KPCAModelConfig"
             raise TypeError(msg)
-        x_test_use = np.asarray(
-            sklearn_layout(x_test, params.transpose_flag),
-            dtype=np.float64,
+        model = KernelPCA(
+            n_components=r,
+            kernel=params.kernel,
+            fit_inverse_transform=True,
+            gamma=params.gamma,
+            degree=params.degree,
+            alpha=params.alpha,
         )
-        errors: list[float] = []
-        last_recon = x_test_use
-        for rank in range(1, params.r_max + 1, params.r_step):
-            model = KernelPCA(
-                n_components=rank,
-                kernel=params.kernel,
-                fit_inverse_transform=True,
-                gamma=params.gamma,
-                degree=params.degree,
-                alpha=params.alpha,
-            )
-            model.fit(self._x_train)
-            latent = model.transform(x_test_use)
-            recon = model.inverse_transform(latent)
-            last_recon = recon
-            num = float(np.linalg.norm(x_test_use - recon, ord="fro"))
-            den = float(np.linalg.norm(x_test_use, ord="fro"))
-            errors.append(num / den if den > 0.0 else float("inf"))
-        LOGGER.debug("KPCA sweep produced %s error samples", len(errors))
-        return last_recon, np.asarray(errors, dtype=np.float64)
+        model.fit(self._x_train)
+        return model.inverse_transform(model.transform(x_test))

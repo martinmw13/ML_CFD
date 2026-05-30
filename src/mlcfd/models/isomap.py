@@ -9,7 +9,7 @@ from sklearn.manifold import Isomap
 from mlcfd.config.schemas import ManifoldModelConfig
 from mlcfd.logging_config import get_logger
 from mlcfd.models.base import SweepableModel, sklearn_layout
-from mlcfd.models.manifold_inverse import barycenter_reconstruction_curve
+from mlcfd.models.manifold_inverse import barycenter_reconstruct
 
 LOGGER = get_logger("models")
 
@@ -34,11 +34,16 @@ class IsomapModel(SweepableModel):
         ).fit(x_use)
         LOGGER.info("Fitted Isomap embedding with shape %s", self._embedding.embedding_.shape)
 
-    def reconstruction_error(
-        self,
-        x_test: NDArray[np.floating],
-    ) -> tuple[NDArray[np.floating], NDArray[np.floating]]:
-        """Run the barycenter inverse sweep on the test matrix."""
+    def _prepare_test(self, x_test: NDArray[np.floating]) -> NDArray[np.floating]:
+        """Put the test matrix in the sklearn layout the embedding was fitted on."""
+        params = self._params
+        if not isinstance(params, ManifoldModelConfig):
+            msg = "Internal configuration must remain ManifoldModelConfig"
+            raise TypeError(msg)
+        return sklearn_layout(x_test, params.transpose_flag)
+
+    def reconstruct(self, x_test: NDArray[np.floating], r: int) -> NDArray[np.floating]:
+        """Reconstruct ``x_test`` from its rank-``r`` Isomap embedding via barycenter weights."""
         if self._embedding is None:
             msg = "Call fit() before reconstruction_error()"
             raise RuntimeError(msg)
@@ -46,12 +51,10 @@ class IsomapModel(SweepableModel):
         if not isinstance(params, ManifoldModelConfig):
             msg = "Internal configuration must remain ManifoldModelConfig"
             raise TypeError(msg)
-        return barycenter_reconstruction_curve(
+        return barycenter_reconstruct(
             self._embedding,
             x_test,
-            r_max=params.r_max,
-            r_step=params.r_step,
+            r,
             k_neighbors=params.k_neighbors,
             reg=params.reg,
-            transpose_flag=params.transpose_flag,
         )
