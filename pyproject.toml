@@ -23,6 +23,7 @@ dev = [
     "pre-commit==4.0.1",
     "nbstripout==0.8.1",
     "ipykernel>=6.29,<7",
+    "pytest>=8,<9",
 ]
 
 [project.scripts]
@@ -47,3 +48,7 @@ select = ["E", "F", "W", "I", "UP", "N", "B", "SIM", "RUF"]
 
 [tool.ruff.format]
 quote-style = "double"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
