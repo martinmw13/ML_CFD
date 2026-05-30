@@ -14,7 +14,7 @@ data:
   reynolds_number: 100
   snapshot_filename_template: "modVcropRe{re}.csv"
   test_size: 0.5
-  spatial_reduction: true
+  orientation: snapshots_as_rows
   random_seed: 42
 
 output:
@@ -30,7 +30,7 @@ model_params:
   r_step: 1
   k_neighbors: 10
   reg: 1.0e-9
-  transpose_flag: false
+  orientation: snapshots_as_rows
   kernel: rbf
   gamma: 0.01
   degree: 1

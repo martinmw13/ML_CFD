@@ -10,6 +10,7 @@ from sklearn.preprocessing import StandardScaler
 from mlcfd.config.schemas import DataConfig
 from mlcfd.logging_config import get_logger
 from mlcfd.mesh.mesh import Mesh
+from mlcfd.orientation import orient
 
 LOGGER = get_logger("preprocessing")
 
@@ -99,36 +100,37 @@ class DataPipeline:
         return erase_cylinder_rows(matrix, self._mesh)
 
     def fit_scaler(self, x_train: NDArray[np.floating]) -> NDArray[np.floating]:
-        """Fit ``StandardScaler`` on the training matrix and return transformed data."""
+        """Fit ``StandardScaler`` on the training matrix and return transformed data.
+
+        ``StandardScaler`` standardizes columns, so the snapshot matrix is first put in
+        the configured :class:`~mlcfd.orientation.SnapshotOrientation` and the result is
+        returned in the canonical layout.
+        """
         self._scaler = StandardScaler()
-        if self._config.spatial_reduction:
-            transformed = self._scaler.fit_transform(x_train.T).T
-        else:
-            transformed = self._scaler.fit_transform(x_train)
+        orientation = self._config.orientation
+        scaled = self._scaler.fit_transform(orient(x_train, orientation))
         LOGGER.debug("Fitted scaler on training matrix shape %s", x_train.shape)
-        return transformed
+        return orient(scaled, orientation)
 
     def transform(self, matrix: NDArray[np.floating]) -> NDArray[np.floating]:
-        """Apply a previously fitted scaler."""
+        """Apply a previously fitted scaler in the configured orientation."""
         if self._scaler is None:
             msg = "Scaler must be fitted before transform()"
             raise RuntimeError(msg)
-        if self._config.spatial_reduction:
-            return self._scaler.transform(matrix.T).T
-        return self._scaler.transform(matrix)
+        orientation = self._config.orientation
+        return orient(self._scaler.transform(orient(matrix, orientation)), orientation)
 
     def inverse_transform(self, matrix: NDArray[np.floating]) -> NDArray[np.floating]:
         """Undo a previous ``fit_scaler``/``transform`` to recover unscaled values.
 
-        Mirrors :meth:`transform`, including the ``spatial_reduction`` transpose, so a
-        scaled matrix round-trips back to the inputs the scaler was fitted against.
+        Mirrors :meth:`transform`, including the orientation, so a scaled matrix
+        round-trips back to the inputs the scaler was fitted against.
         """
         if self._scaler is None:
             msg = "Scaler must be fitted before inverse_transform()"
             raise RuntimeError(msg)
-        if self._config.spatial_reduction:
-            return self._scaler.inverse_transform(matrix.T).T
-        return self._scaler.inverse_transform(matrix)
+        orientation = self._config.orientation
+        return orient(self._scaler.inverse_transform(orient(matrix, orientation)), orientation)
 
     def run(
         self,

@@ -8,8 +8,9 @@ from sklearn.manifold import Isomap
 
 from mlcfd.config.schemas import ManifoldModelConfig
 from mlcfd.logging_config import get_logger
-from mlcfd.models.base import SweepableModel, sklearn_layout
+from mlcfd.models.base import SweepableModel
 from mlcfd.models.manifold_inverse import barycenter_reconstruct
+from mlcfd.orientation import orient
 
 LOGGER = get_logger("models")
 
@@ -27,7 +28,7 @@ class IsomapModel(SweepableModel):
         if not isinstance(self._params, ManifoldModelConfig):
             msg = "IsomapModel requires ManifoldModelConfig"
             raise TypeError(msg)
-        x_use = sklearn_layout(x_train, self._params.transpose_flag)
+        x_use = orient(x_train, self._params.orientation)
         self._embedding = Isomap(
             n_components=self._params.r_max,
             n_neighbors=self._params.k_neighbors,
@@ -35,12 +36,12 @@ class IsomapModel(SweepableModel):
         LOGGER.info("Fitted Isomap embedding with shape %s", self._embedding.embedding_.shape)
 
     def _prepare_test(self, x_test: NDArray[np.floating]) -> NDArray[np.floating]:
-        """Put the test matrix in the sklearn layout the embedding was fitted on."""
+        """Put the test matrix in the orientation the embedding was fitted on."""
         params = self._params
         if not isinstance(params, ManifoldModelConfig):
             msg = "Internal configuration must remain ManifoldModelConfig"
             raise TypeError(msg)
-        return sklearn_layout(x_test, params.transpose_flag)
+        return orient(x_test, params.orientation)
 
     def reconstruct(self, x_test: NDArray[np.floating], r: int) -> NDArray[np.floating]:
         """Reconstruct ``x_test`` from its rank-``r`` Isomap embedding via barycenter weights."""

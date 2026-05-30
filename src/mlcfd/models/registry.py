@@ -44,6 +44,7 @@ from mlcfd.models.kpca import KPCAModel
 from mlcfd.models.lle import LLEModel
 from mlcfd.models.pca_sklearn import PCASklearnModel
 from mlcfd.models.pca_svd import PCASVDModel
+from mlcfd.orientation import SnapshotOrientation
 
 RunKind: TypeAlias = Literal["sweep", "trainable"]
 """How a model is exercised: a dimension sweep, or an iterative training run."""
@@ -83,12 +84,14 @@ MODEL_REGISTRY: dict[str, ModelSpec] = {
     "ae_spatial": ModelSpec(
         AutoencoderModelConfig,
         "trainable",
-        lambda params: LinearAutoencoder(params, layout="spatial"),
+        lambda params: LinearAutoencoder(params, orientation=SnapshotOrientation.SNAPSHOTS_AS_ROWS),
     ),
     "ae_temporal": ModelSpec(
         AutoencoderModelConfig,
         "trainable",
-        lambda params: LinearAutoencoder(params, layout="temporal"),
+        lambda params: LinearAutoencoder(
+            params, orientation=SnapshotOrientation.SNAPSHOTS_AS_COLUMNS
+        ),
     ),
 }
 """Maps each model identifier to its :class:`ModelSpec` — the only taxonomy copy."""

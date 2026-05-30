@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from typing import Literal
-
 import numpy as np
 import torch
 from numpy.typing import NDArray
@@ -13,10 +11,9 @@ from torch.utils.data import DataLoader, TensorDataset
 from mlcfd.config.schemas import AutoencoderModelConfig
 from mlcfd.logging_config import get_logger
 from mlcfd.models.base import TrainableModel
+from mlcfd.orientation import SnapshotOrientation, orient
 
 LOGGER = get_logger("models")
-
-LayoutName = Literal["spatial", "temporal"]
 
 
 class _LinearAutoencoderModule(nn.Module):
@@ -53,10 +50,10 @@ class _LinearAutoencoderModule(nn.Module):
 class LinearAutoencoder(TrainableModel):
     """Trainable linear autoencoder with Adamax + steplr as in the notebooks."""
 
-    def __init__(self, params: AutoencoderModelConfig, layout: LayoutName) -> None:
-        """Attach hyperparameters and tensor layout semantics."""
+    def __init__(self, params: AutoencoderModelConfig, orientation: SnapshotOrientation) -> None:
+        """Attach hyperparameters and the snapshot orientation fed to the network."""
         super().__init__(params)
-        self._layout = layout
+        self._orientation = orientation
         self._module: _LinearAutoencoderModule | None = None
         self._device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -64,10 +61,7 @@ class LinearAutoencoder(TrainableModel):
         """Train the autoencoder with MSE reconstruction."""
         torch.manual_seed(self._params.random_seed)
         matrix = np.asarray(x_train, dtype=np.float32)
-        if self._layout == "spatial":
-            tensor = torch.from_numpy(matrix.T)
-        else:
-            tensor = torch.from_numpy(matrix)
+        tensor = torch.from_numpy(orient(matrix, self._orientation))
         input_dim = int(tensor.shape[1])
         dims = [input_dim, *list(self._params.hidden_layers)]
         self._module = _LinearAutoencoderModule(dims).to(self._device)
@@ -111,9 +105,7 @@ class LinearAutoencoder(TrainableModel):
             msg = "Call fit() before evaluate()"
             raise RuntimeError(msg)
         matrix = np.asarray(x_test, dtype=np.float32)
-        tensor = torch.from_numpy(matrix.T if self._layout == "spatial" else matrix).to(
-            self._device,
-        )
+        tensor = torch.from_numpy(orient(matrix, self._orientation)).to(self._device)
         self._module.eval()
         with torch.no_grad():
             recon, _latent = self._module(tensor)
